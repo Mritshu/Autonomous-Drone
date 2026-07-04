@@ -5,4 +5,4 @@ drone = DroneConnection()
 
 telemetry = Telemetry(drone.master)
 
-telemetry.print_gps()
+telemetry.print_messages()

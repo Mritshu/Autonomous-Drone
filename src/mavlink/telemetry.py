@@ -1,29 +1,45 @@
 from pymavlink import mavutil
+import time
 
 
 class Telemetry:
 
     def __init__(self, master):
+
+        print("Telemetry object created.")
+
         self.master = master
 
-    def get_gps(self):
+        print("Requesting telemetry stream...")
 
-        while True:
+        self.master.mav.request_data_stream_send(
+            self.master.target_system,
+            self.master.target_component,
+            mavutil.mavlink.MAV_DATA_STREAM_ALL,
+            10,
+            1
+        )
+
+        time.sleep(1)
+
+    def print_messages(self):
+
+        print("\nListening for MAVLink messages...\n")
+
+        count = 0
+
+        while count < 20:
 
             msg = self.master.recv_match(
-                type="GLOBAL_POSITION_INT",
-                blocking=True
+                blocking=True,
+                timeout=5
             )
 
-            if msg is not None:
-                return msg
+            if msg is None:
+                continue
 
-    def print_gps(self):
+            print(msg.get_type())
 
-        gps = self.get_gps()
+            count += 1
 
-        print("\n========== GPS ==========")
-        print(f"Latitude  : {gps.lat / 1e7}")
-        print(f"Longitude : {gps.lon / 1e7}")
-        print(f"Altitude  : {gps.alt / 1000:.2f} m")
-        print("=========================\n")
+        print("\nFinished reading 20 messages.")

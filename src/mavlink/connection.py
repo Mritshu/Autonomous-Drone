@@ -43,4 +43,4 @@ class DroneConnection:
             print("Could not connect to any MAVLink port.")
             print("======================================")
         else:
-            print("\nDrone is ready.")
+            print("\nDrone is ready.\n")
