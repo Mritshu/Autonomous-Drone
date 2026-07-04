@@ -1,5 +1,6 @@
 from pymavlink import mavutil
 import time
+import math
 
 
 class Telemetry:
@@ -22,24 +23,56 @@ class Telemetry:
 
         time.sleep(1)
 
-    def print_messages(self):
+    def get_gps(self):
 
-        print("\nListening for MAVLink messages...\n")
-
-        count = 0
-
-        while count < 20:
+        while True:
 
             msg = self.master.recv_match(
+                type="GLOBAL_POSITION_INT",
                 blocking=True,
                 timeout=5
             )
 
-            if msg is None:
-                continue
+            if msg is not None:
 
-            print(msg.get_type())
+                latitude = msg.lat / 1e7
+                longitude = msg.lon / 1e7
+                altitude = msg.alt / 1000
 
-            count += 1
+                return latitude, longitude, altitude
 
-        print("\nFinished reading 20 messages.")
+    def get_attitude(self):
+
+        while True:
+
+            msg = self.master.recv_match(
+                type="ATTITUDE",
+                blocking=True,
+                timeout=5
+            )
+
+            if msg is not None:
+
+                roll = math.degrees(msg.roll)
+                pitch = math.degrees(msg.pitch)
+                yaw = math.degrees(msg.yaw)
+
+                return roll, pitch, yaw
+
+    def print_status(self):
+
+        latitude, longitude, altitude = self.get_gps()
+
+        roll, pitch, yaw = self.get_attitude()
+
+        print("\n========== DRONE STATUS ==========\n")
+
+        print(f"Latitude  : {latitude}")
+        print(f"Longitude : {longitude}")
+        print(f"Altitude  : {altitude:.2f} m\n")
+
+        print(f"Roll      : {roll:.2f}°")
+        print(f"Pitch     : {pitch:.2f}°")
+        print(f"Yaw       : {yaw:.2f}°")
+
+        print("\n=================================\n")
